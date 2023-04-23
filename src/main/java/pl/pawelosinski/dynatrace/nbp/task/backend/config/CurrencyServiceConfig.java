@@ -11,13 +11,13 @@ import pl.pawelosinski.dynatrace.nbp.task.backend.service.CurrencyService;
 public class CurrencyServiceConfig {
 
     @Bean
-    @Profile("!integration")
+    @Profile("!test")
     public String getApiCoreUrl(){
         return "http://api.nbp.pl";
     }
 
     @Bean
-    @Profile("integration")
+    @Profile("test")
     public String testApiCoreUrl(){
         return "http://localhost:8123";
     }

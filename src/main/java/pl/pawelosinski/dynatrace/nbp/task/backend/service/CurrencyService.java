@@ -19,7 +19,6 @@ import static java.lang.Math.abs;
 @Service
 public class CurrencyService {
 
-
     private final String apiCoreUrl;
 
     private final RestTemplate restTemplate;
@@ -30,7 +29,7 @@ public class CurrencyService {
         this.restTemplate = builder.build();
     }
 
-    public TableA getRateFromDay(String currency, String date) throws Exception {
+    public Optional<TableA> getRateFromDay(String currency, String date) throws Exception {
         TableA tableA;
         String url = apiCoreUrl + "/api/exchangerates/rates/a/" + currency + "/" + date + "/?format=json";
 
@@ -39,7 +38,7 @@ public class CurrencyService {
             throw new Exception("Failed to retrieve data from API");
         }
 
-        return tableA;
+        return Optional.of(tableA);
 
     }
 
@@ -48,21 +47,19 @@ public class CurrencyService {
         MinMaxRate minMaxRate;
         List<RateA> rates;
 
-        String url = "http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/last/" + n;
+        String url = apiCoreUrl + "/api/exchangerates/rates/a/" + currency + "/last/" + n + "/?format=json";
         tableA = restTemplate.getForObject(url, TableA.class);
         if (tableA == null) {
             throw new Exception("Failed to retrieve data from API");
         }
         rates = tableA.getRates();
         if (!rates.isEmpty()) {
-
             minMaxRate = new MinMaxRate(
-                    rates.stream().min(Comparator.comparing(RateA::getMid)).get(),
-                    rates.stream().max(Comparator.comparing(RateA::getMid)).get()
+                    rates.stream().min(Comparator.comparing(RateA::getMid)).orElse(null),
+                    rates.stream().max(Comparator.comparing(RateA::getMid)).orElse(null)
             );
             return Optional.of(minMaxRate);
         }
-
         return Optional.empty();
     }
 
@@ -71,7 +68,7 @@ public class CurrencyService {
         RateC rate; // rate with major difference
         List<RateC> rates;
 
-        String url = "http://api.nbp.pl/api/exchangerates/rates/c/" + currency + "/last/" + n;
+        String url = apiCoreUrl + "/api/exchangerates/rates/c/" + currency + "/last/" + n + "/?format=json";
         tableC = restTemplate.getForObject(url, TableC.class);
         if (tableC == null) {
             throw new Exception("Failed to retrieve data from API");
@@ -81,7 +78,6 @@ public class CurrencyService {
             rate = rates.stream().max(Comparator.comparing(v -> abs(v.getBid() - v.getAsk()))).get();
             return Optional.of(rate);
         }
-
         return Optional.empty();
     }
 

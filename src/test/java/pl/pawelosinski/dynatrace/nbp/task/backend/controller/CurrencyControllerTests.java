@@ -1,4 +1,4 @@
-package pl.pawelosinski.dynatrace.nbp.task.backend.service;
+package pl.pawelosinski.dynatrace.nbp.task.backend.controller;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterAll;
@@ -8,26 +8,26 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.client.HttpClientErrorException;
 import pl.pawelosinski.dynatrace.nbp.task.backend.model.MinMaxRate;
 import pl.pawelosinski.dynatrace.nbp.task.backend.model.rate.RateC;
 import pl.pawelosinski.dynatrace.nbp.task.backend.model.table.TableA;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("test")
-public class CurrencyServiceTests {
+public class CurrencyControllerTests {
 
     @Autowired
-    private CurrencyService currencyService;
+    private TestRestTemplate testRestTemplate;
 
     private final WireMockServer wireMockServer = new WireMockServer(8123);
 
@@ -43,7 +43,7 @@ public class CurrencyServiceTests {
 
 
     @Test
-    public void shouldGetRateFromDay() throws Exception {
+    public void shouldGetRateFromDay() {
         // given
         String currency = "gbp";
         String date = "2012-01-02";
@@ -55,14 +55,14 @@ public class CurrencyServiceTests {
                         .withBodyFile("fromDay.json")));
 
         // when
-        TableA result = currencyService.getRateFromDay(currency, date).isPresent()?
-                currencyService.getRateFromDay(currency, date).get() : null;
+        ResponseEntity<TableA> result = testRestTemplate.getForEntity("/exchanges/{currency}?date={date}", TableA.class, currency, date);
 
         // then
-        assertNotNull(result);
-        assertEquals(1, result.getRates().size());
-        assertEquals("GBP", result.getCode());
-        assertEquals(5.348, result.getRates().get(0).getMid(), 0.0001);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(1, result.getBody().getRates().size());
+        assertEquals("GBP", result.getBody().getCode());
+        assertEquals(5.348, result.getBody().getRates().get(0).getMid(), 0.0001);
     }
 
     @Test
@@ -75,12 +75,15 @@ public class CurrencyServiceTests {
         stubFor(get(urlEqualTo("/api/exchangerates/rates/a/USD/2023-04-22/?format=json"))
                 .willReturn(aResponse().withStatus(404)));
 
+        // when
+        ResponseEntity<TableA> result = testRestTemplate.getForEntity("/exchanges/{currency}?date={date}", TableA.class, currency, date);
 
         // then
-        assertThrows(HttpClientErrorException.class, () -> currencyService.getRateFromDay(currency, date));
+        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+        assertNull(result.getBody());
     }
     @Test
-    public void shouldGetMinAndMaxRate() throws Exception {
+    public void shouldGetMinAndMaxRate() {
         // given
         String currency = "gbp";
         int quotations = 5;
@@ -92,14 +95,13 @@ public class CurrencyServiceTests {
                         .withBodyFile("minMax.json")));
 
         // when
-        MinMaxRate result = currencyService.getMinMaxFromQuotations(quotations, currency).isPresent()?
-                currencyService.getMinMaxFromQuotations(quotations, currency).get() : null;
-
+        ResponseEntity<MinMaxRate> result = testRestTemplate.getForEntity("/extremum/{currency}?quotations={quotations}", MinMaxRate.class, currency, quotations);
 
         // then
-        assertNotNull(result);
-        assertEquals(5.4321, result.getMax().getMid(), 0.0001);
-        assertEquals(1.2345, result.getMin().getMid(), 0.0001);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(5.4321, result.getBody().getMax().getMid(), 0.0001);
+        assertEquals(1.2345, result.getBody().getMin().getMid(), 0.0001);
     }
 
     @Test
@@ -112,13 +114,18 @@ public class CurrencyServiceTests {
         stubFor(get(urlEqualTo("/api/exchangerates/rates/a/gbp/last/305/?format=json"))
                 .willReturn(aResponse().withStatus(400)));
 
+        // when
+        ResponseEntity<MinMaxRate> result = testRestTemplate.getForEntity("/extremum/{currency}?quotations={quotations}", MinMaxRate.class, currency, quotations);
+
+
         // then
-        assertThrows(HttpClientErrorException.class, () -> currencyService.getMinMaxFromQuotations(quotations, currency));
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNull(result.getBody());
     }
 
 
     @Test
-    public void shouldGetRateWithMajorDifference() throws Exception {
+    public void shouldGetRateWithMajorDifference() {
         // given
         String currency = "gbp";
         int quotations = 5;
@@ -130,15 +137,14 @@ public class CurrencyServiceTests {
                         .withBodyFile("majorDifference.json")));
 
         // when
-        RateC result = currencyService.getDifferenceFromQuotations(quotations, currency).isPresent()?
-                currencyService.getDifferenceFromQuotations(quotations, currency).get() : null;
-
+        ResponseEntity<RateC> result = testRestTemplate.getForEntity("/majordifference/{currency}?quotations={quotations}", RateC.class, currency, quotations);
 
         // then
-        assertNotNull(result);
-        assertEquals("074/C/NBP/2023", result.getNo());
-        assertEquals(5.4321, result.getAsk(), 0.0001);
-        assertEquals(1.2345, result.getBid(), 0.0001);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals("074/C/NBP/2023", result.getBody().getNo());
+        assertEquals(5.4321, result.getBody().getAsk(), 0.0001);
+        assertEquals(1.2345, result.getBody().getBid(), 0.0001);
     }
 
     @Test
@@ -151,8 +157,12 @@ public class CurrencyServiceTests {
         stubFor(get(urlEqualTo("/api/exchangerates/rates/a/abc/last/123/?format=json"))
                 .willReturn(aResponse().withStatus(404)));
 
-        // then
-        assertThrows(HttpClientErrorException.class, () -> currencyService.getMinMaxFromQuotations(quotations, currency));
-    }
+        // when
+        ResponseEntity<RateC> result = testRestTemplate.getForEntity("/majordifference/{currency}?quotations={quotations}", RateC.class, currency, quotations);
 
+        // then
+        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+        assertNull(result.getBody());
+    }
+    
 }

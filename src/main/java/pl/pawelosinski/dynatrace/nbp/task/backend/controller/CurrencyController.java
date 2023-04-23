@@ -23,7 +23,7 @@ public class CurrencyController {
     private CurrencyService currencyService;
 
     @GetMapping(value = "/exchanges/{currency}", produces="application/json")
-    public ResponseEntity<TableA> averageExchangeRate(@PathVariable String currency, @RequestParam(value = "date") String date) {
+    public ResponseEntity<Optional<TableA>> averageExchangeRate(@PathVariable String currency, @RequestParam(value = "date") String date) {
 
         try {
             return ResponseEntity.status(OK).body(currencyService.getRateFromDay(currency, date));
@@ -40,7 +40,7 @@ public class CurrencyController {
         }
     }
 
-    @GetMapping(value = "/minmaxrate/{currency}", produces="application/json")
+    @GetMapping(value = "/extremum/{currency}", produces="application/json")
     public ResponseEntity<Optional<MinMaxRate>> averageExchangeRate(@PathVariable String currency, @RequestParam(value = "quotations") int quotations) {
         try {
             return ResponseEntity.status(OK).body(currencyService.getMinMaxFromQuotations(quotations, currency));
