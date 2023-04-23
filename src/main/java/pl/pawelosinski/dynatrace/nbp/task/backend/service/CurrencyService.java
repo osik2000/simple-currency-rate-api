@@ -17,16 +17,20 @@ import static java.lang.Math.abs;
 @Service
 public class CurrencyService {
 
+
+    private final String apiCoreUrl;
+
     private final RestTemplate restTemplate;
 
     @Autowired
-    public CurrencyService(RestTemplateBuilder builder) {
+    public CurrencyService(String apiCoreUrl, RestTemplateBuilder builder) {
+        this.apiCoreUrl = apiCoreUrl;
         this.restTemplate = builder.build();
     }
 
     public CurrencyRateTable getRateFromDay(String currency, String date) throws Exception {
         CurrencyRateTable currencyRateTable;
-        String url = "http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/" + date + "/?format=json";
+        String url = apiCoreUrl + "/api/exchangerates/rates/a/" + currency + "/" + date + "/?format=json";
         System.out.println(url);
 
         currencyRateTable = restTemplate.getForObject(url, CurrencyRateTable.class);
