@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
-import pl.pawelosinski.dynatrace.nbp.task.backend.model.CurrencyRateTable;
-import pl.pawelosinski.dynatrace.nbp.task.backend.model.MinMaxRate;
-import pl.pawelosinski.dynatrace.nbp.task.backend.model.Rate;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.*;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.rate.RateC;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.table.TableA;
 import pl.pawelosinski.dynatrace.nbp.task.backend.service.CurrencyService;
 
 import java.util.Optional;
@@ -22,8 +22,8 @@ public class CurrencyController {
     @Autowired
     private CurrencyService currencyService;
 
-    @GetMapping("/averagerate/{date}")
-    public ResponseEntity<CurrencyRateTable> averageExchangeRate(@RequestParam(value = "currency") String currency, @PathVariable String date) {
+    @GetMapping(value = "/exchanges/{currency}", produces="application/json")
+    public ResponseEntity<TableA> averageExchangeRate(@PathVariable String currency, @RequestParam(value = "date") String date) {
 
         try {
             return ResponseEntity.status(OK).body(currencyService.getRateFromDay(currency, date));
@@ -40,10 +40,10 @@ public class CurrencyController {
         }
     }
 
-    @GetMapping("/minmaxrate/{n}")
-    public ResponseEntity<Optional<MinMaxRate>> averageExchangeRate(@RequestParam(value = "currency") String currency, @PathVariable int n) {
+    @GetMapping(value = "/minmaxrate/{currency}", produces="application/json")
+    public ResponseEntity<Optional<MinMaxRate>> averageExchangeRate(@PathVariable String currency, @RequestParam(value = "quotations") int quotations) {
         try {
-            return ResponseEntity.status(OK).body(currencyService.getMinMaxFromQuotations(n, currency));
+            return ResponseEntity.status(OK).body(currencyService.getMinMaxFromQuotations(quotations, currency));
         } catch (HttpClientErrorException ex) {
             if (ex.getStatusCode() == NOT_FOUND) {
                 return ResponseEntity.status(NOT_FOUND).build();
@@ -57,10 +57,10 @@ public class CurrencyController {
         }
     }
 
-    @GetMapping("/majordifference/{n}")
-    public ResponseEntity<Optional<Rate>> majorDifference(@RequestParam(value = "currency") String currency, @PathVariable int n) {
+    @GetMapping(value = "/majordifference/{currency}", produces="application/json")
+    public ResponseEntity<Optional<RateC>> majorDifference(@PathVariable String currency, @RequestParam(value = "quotations") int quotations){
         try {
-            return ResponseEntity.status(OK).body(currencyService.getDifferenceFromQuotations(n, currency));
+            return ResponseEntity.status(OK).body(currencyService.getDifferenceFromQuotations(quotations, currency));
         } catch (HttpClientErrorException ex) {
             if (ex.getStatusCode() == NOT_FOUND) {
                 return ResponseEntity.status(NOT_FOUND).build();

@@ -9,7 +9,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.HttpClientErrorException;
-import pl.pawelosinski.dynatrace.nbp.task.backend.model.CurrencyRateTable;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.table.Table;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.table.TableA;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
@@ -60,7 +61,7 @@ public class CurrencyServiceTests {
                         .withBodyFile("fromDay.json")));
 
         // when
-        CurrencyRateTable result = currencyService.getRateFromDay(currency, date);
+        TableA result = currencyService.getRateFromDay(currency, date);
 
         System.out.println(result.getCurrency());
 

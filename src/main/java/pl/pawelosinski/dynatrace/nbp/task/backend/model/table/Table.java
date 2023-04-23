@@ -1,21 +1,17 @@
-package pl.pawelosinski.dynatrace.nbp.task.backend.model;
+package pl.pawelosinski.dynatrace.nbp.task.backend.model.table;
 
-import java.util.List;
-
-public class CurrencyRateTable {
+public class Table {
     private String table = "";
     private String currency = "";
     private String code = "";
-    private List<Rate> rates = List.of();
 
-    public CurrencyRateTable() {
+    public Table() {
     }
 
-    public CurrencyRateTable(String table, String currency, String code, List<Rate> rates) {
+    public Table(String table, String currency, String code) {
         this.table = table;
         this.currency = currency;
         this.code = code;
-        this.rates = rates;
     }
 
     public String getTable() {
@@ -42,12 +38,5 @@ public class CurrencyRateTable {
         this.code = code;
     }
 
-    public List<Rate> getRates() {
-        return rates;
-    }
-
-    public void setRates(List<Rate> rates) {
-        this.rates = rates;
-    }
 }
 

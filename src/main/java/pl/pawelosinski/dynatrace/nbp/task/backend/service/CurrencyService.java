@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import pl.pawelosinski.dynatrace.nbp.task.backend.model.CurrencyRateTable;
-import pl.pawelosinski.dynatrace.nbp.task.backend.model.MinMaxRate;
-import pl.pawelosinski.dynatrace.nbp.task.backend.model.Rate;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.*;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.rate.RateA;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.rate.RateC;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.table.TableA;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.table.TableC;
 
 import java.util.Comparator;
 import java.util.List;
@@ -28,36 +30,35 @@ public class CurrencyService {
         this.restTemplate = builder.build();
     }
 
-    public CurrencyRateTable getRateFromDay(String currency, String date) throws Exception {
-        CurrencyRateTable currencyRateTable;
+    public TableA getRateFromDay(String currency, String date) throws Exception {
+        TableA tableA;
         String url = apiCoreUrl + "/api/exchangerates/rates/a/" + currency + "/" + date + "/?format=json";
-        System.out.println(url);
 
-        currencyRateTable = restTemplate.getForObject(url, CurrencyRateTable.class);
-        if (currencyRateTable == null) {
+        tableA = restTemplate.getForObject(url, TableA.class);
+        if (tableA == null) {
             throw new Exception("Failed to retrieve data from API");
         }
 
-        return currencyRateTable;
+        return tableA;
 
     }
 
     public Optional<MinMaxRate> getMinMaxFromQuotations(int n, String currency) throws Exception {
-        CurrencyRateTable currencyRateTable;
+        TableA tableA;
         MinMaxRate minMaxRate;
-        List<Rate> rates;
+        List<RateA> rates;
 
         String url = "http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/last/" + n;
-        currencyRateTable = restTemplate.getForObject(url, CurrencyRateTable.class);
-        if (currencyRateTable == null) {
+        tableA = restTemplate.getForObject(url, TableA.class);
+        if (tableA == null) {
             throw new Exception("Failed to retrieve data from API");
         }
-        rates = currencyRateTable.getRates();
+        rates = tableA.getRates();
         if (!rates.isEmpty()) {
 
             minMaxRate = new MinMaxRate(
-                    rates.stream().min(Comparator.comparing(Rate::getMid)).get(),
-                    rates.stream().max(Comparator.comparing(Rate::getMid)).get()
+                    rates.stream().min(Comparator.comparing(RateA::getMid)).get(),
+                    rates.stream().max(Comparator.comparing(RateA::getMid)).get()
             );
             return Optional.of(minMaxRate);
         }
@@ -65,17 +66,17 @@ public class CurrencyService {
         return Optional.empty();
     }
 
-    public Optional<Rate> getDifferenceFromQuotations(int n, String currency) throws Exception {
-        CurrencyRateTable currencyRateTable;
-        Rate rate; // rate with major difference
-        List<Rate> rates;
+    public Optional<RateC> getDifferenceFromQuotations(int n, String currency) throws Exception {
+        TableC tableC;
+        RateC rate; // rate with major difference
+        List<RateC> rates;
 
         String url = "http://api.nbp.pl/api/exchangerates/rates/c/" + currency + "/last/" + n;
-        currencyRateTable = restTemplate.getForObject(url, CurrencyRateTable.class);
-        if (currencyRateTable == null) {
+        tableC = restTemplate.getForObject(url, TableC.class);
+        if (tableC == null) {
             throw new Exception("Failed to retrieve data from API");
         }
-        rates = currencyRateTable.getRates();
+        rates = tableC.getRates();
         if (!rates.isEmpty()) {
             rate = rates.stream().max(Comparator.comparing(v -> abs(v.getBid() - v.getAsk()))).get();
             return Optional.of(rate);
