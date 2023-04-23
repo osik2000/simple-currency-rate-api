@@ -1,4 +1,4 @@
-package pl.pawelosinski.dynatrace.nbp.task.model;
+package pl.pawelosinski.dynatrace.nbp.task.backend.model;
 
 public class Rate {
     private String no;

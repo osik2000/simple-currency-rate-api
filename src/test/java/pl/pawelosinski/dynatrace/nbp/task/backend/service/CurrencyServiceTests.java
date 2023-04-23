@@ -1,17 +1,26 @@
-package pl.pawelosinski.dynatrace.nbp.task.service;
+package pl.pawelosinski.dynatrace.nbp.task.backend.service;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.junit.Rule;
 import org.junit.jupiter.api.*;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.HttpClientErrorException;
-import pl.pawelosinski.dynatrace.nbp.task.model.CurrencyRateTable;
+import org.springframework.web.context.WebApplicationContext;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.CurrencyRateTable;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CurrencyServiceTests {
@@ -22,13 +31,13 @@ public class CurrencyServiceTests {
     @Autowired
     private TestRestTemplate restTemplate;
 
-
-    public WireMockServer wireMockServer = new WireMockServer(8123);
+    private final WireMockServer wireMockServer = new WireMockServer(8080);
 
     @BeforeAll
     void startWireMock() {
         wireMockServer.start();
     }
+
 
     @AfterEach
     protected void clearAfterEach() {
@@ -44,8 +53,10 @@ public class CurrencyServiceTests {
     @Test
     public void shouldGetRateFromDay() throws Exception {
         // given
-        String currency = "GBP";
+        String currency = "gbp";
         String date = "2012-01-02";
+
+        configureFor("localhost", 8080);
 
         stubFor(get(urlPathEqualTo("http://api.nbp.pl/api/exchangerates/rates/a/gbp/2012-01-02/?format=json"))
                 .willReturn(aResponse()
@@ -54,6 +65,8 @@ public class CurrencyServiceTests {
 
         // when
         CurrencyRateTable result = currencyService.getRateFromDay(currency, date);
+
+        System.out.println(result.getCurrency());
 
         // then
         assertEquals(1, result.getRates().size());

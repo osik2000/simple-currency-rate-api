@@ -1,22 +1,18 @@
-package pl.pawelosinski.dynatrace.nbp.task.service;
+package pl.pawelosinski.dynatrace.nbp.task.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import pl.pawelosinski.dynatrace.nbp.task.model.CurrencyRateTable;
-import pl.pawelosinski.dynatrace.nbp.task.model.MinMaxRate;
-import pl.pawelosinski.dynatrace.nbp.task.model.Rate;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.CurrencyRateTable;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.MinMaxRate;
+import pl.pawelosinski.dynatrace.nbp.task.backend.model.Rate;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Math.abs;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 public class CurrencyService {
@@ -31,6 +27,7 @@ public class CurrencyService {
     public CurrencyRateTable getRateFromDay(String currency, String date) throws Exception {
         CurrencyRateTable currencyRateTable;
         String url = "http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/" + date + "/?format=json";
+        System.out.println(url);
 
         currencyRateTable = restTemplate.getForObject(url, CurrencyRateTable.class);
         if (currencyRateTable == null) {
