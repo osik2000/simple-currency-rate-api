@@ -1,45 +1,76 @@
 package pl.pawelosinski.dynatrace.nbp.task.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import pl.pawelosinski.dynatrace.nbp.task.model.CurrencyRateTable;
+import pl.pawelosinski.dynatrace.nbp.task.model.MinMaxRate;
+import pl.pawelosinski.dynatrace.nbp.task.model.Rate;
+import pl.pawelosinski.dynatrace.nbp.task.service.CurrencyService;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import java.util.Optional;
+
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 public class CurrencyController {
 
-    private RestTemplate restTemplate;
-
     @Autowired
-    public CurrencyController(RestTemplateBuilder builder) {
-        this.restTemplate = builder.build();
-    }
+    private CurrencyService currencyService;
 
     @GetMapping("/averagerate/{date}")
-    public ResponseEntity<String> averageExchangeRate(@RequestParam(value = "currency") String currency, @PathVariable String date) {
-
-        String url = "http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/" + date + "/?format=json";
-        System.out.println(url);
-
+    public ResponseEntity<CurrencyRateTable> averageExchangeRate(@RequestParam(value = "currency") String currency, @PathVariable String date) {
 
         try {
-            return restTemplate.getForEntity(url, String.class);
+            return ResponseEntity.status(OK).body(currencyService.getRateFromDay(currency, date));
         } catch (HttpClientErrorException ex) {
             if (ex.getStatusCode() == NOT_FOUND) {
-                return new ResponseEntity<>("Error 404: Resource not found", NOT_FOUND);
+                return ResponseEntity.status(NOT_FOUND).build();
             } else if (ex.getStatusCode() == BAD_REQUEST) {
-                return new ResponseEntity<>("Error 400: Bad Request", BAD_REQUEST);
+                return ResponseEntity.status(BAD_REQUEST).build();
             } else {
-                return new ResponseEntity<>("Error: " + ex.getStatusCode(), ex.getStatusCode());
+                return ResponseEntity.status(ex.getStatusCode()).build();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/minmaxrate/{n}")
+    public ResponseEntity<Optional<MinMaxRate>> averageExchangeRate(@RequestParam(value = "currency") String currency, @PathVariable int n) {
+        try {
+            return ResponseEntity.status(OK).body(currencyService.getMinMaxFromQuotations(n, currency));
+        } catch (HttpClientErrorException ex) {
+            if (ex.getStatusCode() == NOT_FOUND) {
+                return ResponseEntity.status(NOT_FOUND).build();
+            } else if (ex.getStatusCode() == BAD_REQUEST) {
+                return ResponseEntity.status(BAD_REQUEST).build();
+            } else {
+                return ResponseEntity.status(ex.getStatusCode()).build();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/majordifference/{n}")
+    public ResponseEntity<Optional<Rate>> majorDifference(@RequestParam(value = "currency") String currency, @PathVariable int n) {
+        try {
+            return ResponseEntity.status(OK).body(currencyService.getDifferenceFromQuotations(n, currency));
+        } catch (HttpClientErrorException ex) {
+            if (ex.getStatusCode() == NOT_FOUND) {
+                return ResponseEntity.status(NOT_FOUND).build();
+            } else if (ex.getStatusCode() == BAD_REQUEST) {
+                return ResponseEntity.status(BAD_REQUEST).build();
+            } else {
+                return ResponseEntity.status(ex.getStatusCode()).build();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
