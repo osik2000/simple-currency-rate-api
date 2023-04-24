@@ -40,11 +40,11 @@ docker run -p 8080:8080 -d osik2000/dynatrace.nbp.task.backend
 
 run app with Java/Docker
 
-`java -jar build/libs/dynatrace.nbp.task.backend-0.0.1-SNAPSHOT.jar`
+`java -jar dynatrace.nbp.task.backend-0.0.1-SNAPSHOT.jar`
 or
 `docker run -p 8080:8080 -d osik2000/dynatrace.nbp.task.backend`
 
-`Endpoints can be tested with [Postman](https://www.postman.com/downloads/) app.`
+`Endpoints can be tested with [Postman]`(https://www.postman.com/downloads/)` app.`
 
 1. put `http://localhost:8080/exchanges/{CURRENCY_CODE}?date=YYYY-MM-DD` to postman (method GET) to get average exchange rate for specific date and currency.
 
