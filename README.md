@@ -75,6 +75,23 @@ Here are some examples which presents uses of endpoints (you can test it with Po
 
 `http://localhost:8080/majordifference/GBP?quotations=5`
 
+## Output
+--------
+
+This endpoints return exact data as NBP Api (Json)
+
+example:
+
+````json
+{
+"table":"A",
+"currency":"funt szterling",
+"code":"GBP",
+"rates":
+  [{"no":"1/A/NBP/2012","effectiveDate":"2012-01-02","mid":5.348}]
+}
+````
+
 
 ## License
 -------
