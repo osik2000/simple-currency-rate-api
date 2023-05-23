@@ -10,20 +10,20 @@ This is backend application that provides three endpoints. It uses API from [NBP
 
 `way 1 - run it with Java`
 
-1.  [Download release](https://github.com/osik2000/dynatrace.nbp.task/releases/download/v0.0.1-SNAPSHOT/dynatrace.nbp.task.backend-0.0.1-SNAPSHOT.jar)
+1.  [Download release](https://github.com/osik2000/simple-currency-rate-api/releases/download/v0.0.1-SNAPSHOT/simple.currency.rate.api-0.0.1-SNAPSHOT.jar)
 2.  Run it with:
 ````
-java -jar dynatrace.nbp.task.backend-0.0.1-SNAPSHOT.jar
+java -jar simple.currency.rate.api-0.0.1-SNAPSHOT.jar
 ````
 
 `way 2 - run it with Docker`
 1.  Pull my docker image:
 ````
-docker pull osik2000/dynatrace.nbp.task.backend
+docker pull osik2000/simple-currency-rate-api
 ````
 2.  Run it with:
 ````
-docker run -p 8080:8080 -d osik2000/dynatrace.nbp.task.backend
+docker run -p 8080:8080 -d osik2000/simple-currency-rate-api
 ````
 
 
@@ -40,9 +40,9 @@ docker run -p 8080:8080 -d osik2000/dynatrace.nbp.task.backend
 
 run app with Java/Docker
 
-`java -jar dynatrace.nbp.task.backend-0.0.1-SNAPSHOT.jar`
+`java -jar simple.currency.rate.api-0.0.1-SNAPSHOT.jar`
 or
-`docker run -p 8080:8080 -d osik2000/dynatrace.nbp.task.backend`
+`docker run -p 8080:8080 -d osik2000/simple-currency-rate-api`
 
 `Endpoints can be tested with` [Postman](https://www.postman.com/downloads/) ` app.`
 
